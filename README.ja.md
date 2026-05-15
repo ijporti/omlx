@@ -84,6 +84,8 @@ pip install -e ".[mcp]"   # MCP（Model Context Protocol）サポート付き
 Python 3.10+とApple Silicon（M1/M2/M3/M4）が必要です。
 
 > **メモ（個人用）:** M2 Pro 16GBで動作確認済み。`pip install -e ".[mcp]"`でインストールする場合、仮想環境を使うと後々管理が楽です（`python -m venv .venv && source .venv/bin/activate`）。
+>
+> **追記:** M3 Max 36GBでも問題なく動作した。メモリが多い分、大きめのモデル（30B量子化）もスワップなしで快適に動く。Homebrewよりソースからインストールした方がバージョン管理しやすいと感じた。
 
 ## クイックスタート
 
@@ -91,6 +93,4 @@ Python 3.10+とApple Silicon（M1/M2/M3/M4）が必要です。
 
 ApplicationsフォルダからoMLXを起動します。ウェルカム画面が3つのステップを案内します — モデルディレクトリの設定、サーバー起動、最初のモデルダウンロード。以上です。OpenClaw、OpenCode、Codex、Hermes Agent、Copilotに接続するには、[統合](#統合)を参照してください。
 
-<p align="center">
-  <img src="docs/images/Screenshot 2026-02-10 at 00.36.32.png" alt="oMLX ウェルカム画面" width="360">
-  <img src="docs/images/Screenshot 2026-0
+<p align="ce
