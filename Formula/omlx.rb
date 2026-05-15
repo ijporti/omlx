@@ -63,10 +63,12 @@ class Omlx < Formula
     # keeping 0.29.0 until upstream confirms the lifespan fix is merged.
     system libexec/"bin/pip", "install", "uvicorn==0.29.0"
 
+    # Personal: also pin httpx to 0.27.x — 0.28.x changed default timeout
+    # behaviour and I started seeing sporadic TimeoutException on long
+    # generations when streaming from a client script. 0.27.2 is stable.
+    system libexec/"bin/pip", "install", "httpx==0.27.2"
+
     bin.install_symlink Dir[libexec/"bin/omlx"]
   end
 
   # Patch the macOS arm64 xgrammar wheel so its native binding loads.
-  # The 0.1.32+ wheel ships libxgrammar_bindings.dylib with
-  # @rpath/libtvm_ffi.dylib but no LC_RPATH pointing at where tvm_ffi
-  # installs its nat
