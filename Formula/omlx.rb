@@ -54,6 +54,10 @@ class Omlx < Formula
     # python-multipart is declared in omlx's [audio] extra, not in mlx-audio
     system libexec/"bin/pip", "install", "python-multipart>=0.0.5"
 
+    # Personal note: pin uvicorn to a known-stable version to avoid startup
+    # issues I've hit with the latest release on my M2 MacBook.
+    system libexec/"bin/pip", "install", "uvicorn==0.29.0"
+
     bin.install_symlink Dir[libexec/"bin/omlx"]
   end
 
@@ -68,60 +72,4 @@ class Omlx < Formula
   # jundot/omlx#1005.
   #
   # Runs in post_install rather than install because Homebrew's
-  # post-install "Cleaning" step deletes every dist-info/RECORD file
-  # in the keg as part of its relocation pass (RECORD hashes become
-  # invalid once brew rewrites Mach-O install names). Anything we
-  # write to RECORD inside `def install` is wiped before the user
-  # sees it.
-  def post_install
-    return unless build.with?("grammar")
-
-    ohai "Patching xgrammar macOS arm64 wheel"
-    py = libexec/"bin/python"
-    site = Utils.safe_popen_read(py, "-c",
-                                 "import site; print(site.getsitepackages()[0])").chomp
-    tvmlib = Utils.safe_popen_read(py, "-c",
-      "import os, tvm_ffi; print(os.path.join(os.path.dirname(tvm_ffi.__file__), 'lib'))").chomp
-    dylib = "#{site}/xgrammar/libxgrammar_bindings.dylib"
-    dist_dirs = Dir["#{site}/xgrammar-*.dist-info"]
-
-    ohai "  site=#{site}"
-    ohai "  tvmlib=#{tvmlib}"
-    ohai "  dylib=#{dylib} (exists? #{File.exist?(dylib)})"
-    ohai "  dist-info=#{dist_dirs.inspect}"
-
-    odie "xgrammar dylib not found at #{dylib}" unless File.exist?(dylib)
-    odie "xgrammar dist-info not found under #{site}" if dist_dirs.empty?
-
-    # Patch 1: add tvm_ffi/lib to the dylib's rpath, then re-codesign so
-    # macOS will load the modified dylib.
-    rpaths = Utils.safe_popen_read("/usr/bin/otool", "-l", dylib)
-    if rpaths.include?(tvmlib)
-      ohai "  rpath already points at tvm_ffi/lib"
-    else
-      ohai "  adding rpath -> #{tvmlib}"
-      system "/usr/bin/install_name_tool", "-add_rpath", tvmlib, dylib
-      system "/usr/bin/codesign", "--force", "--sign", "-", dylib
-    end
-
-    # Patch 2: ensure RECORD lists the dylib so tvm_ffi's manifest-based
-    # lookup finds it. Brew's clean pass already deleted every RECORD by
-    # the time post_install runs, so we always (re)create one.
-    record = "#{dist_dirs.first}/RECORD"
-    if File.exist?(record) && File.read(record).include?("libxgrammar_bindings.dylib")
-      ohai "  RECORD already lists the dylib"
-    else
-      ohai "  writing dylib entry to #{record}"
-      File.open(record, "a") { |f| f.puts "xgrammar/libxgrammar_bindings.dylib,," }
-    end
-
-    # Verify the patch took. Failing here is much less confusing than
-    # the user discovering it later via a 500 from the admin route.
-    ohai "  verifying import xgrammar..."
-    system py, "-c", "import xgrammar; print('xgrammar import OK')"
-  end
-
-  test do
-    assert_match version.to_s, shell_output("#{bin}/omlx --version")
-  end
-end
+  # post-install "Cleaning" step deletes
