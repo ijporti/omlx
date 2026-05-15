@@ -56,6 +56,8 @@ class Omlx < Formula
 
     # Personal note: pin uvicorn to a known-stable version to avoid startup
     # issues I've hit with the latest release on my M2 MacBook.
+    # 0.29.0 has been solid; 0.30.x introduced a regression with lifespan
+    # events that caused the server to hang on first request occasionally.
     system libexec/"bin/pip", "install", "uvicorn==0.29.0"
 
     bin.install_symlink Dir[libexec/"bin/omlx"]
@@ -67,9 +69,4 @@ class Omlx < Formula
   # installs its native lib, and the dist-info is missing a RECORD
   # entry for the dylib so tvm_ffi's manifest-based lookup fails.
   # Both manifest as RuntimeError("Cannot find library: ...") at
-  # `import xgrammar`, which crashes /admin/api/grammar/parsers and
-  # hides the Reasoning Parser dropdown. Tracking upstream:
-  # jundot/omlx#1005.
-  #
-  # Runs in post_install rather than install because Homebrew's
-  # post-install "Cleaning" step deletes
+  # `import xgrammar`, which crashes /admin/api/grammar/pa
