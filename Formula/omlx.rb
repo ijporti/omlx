@@ -58,6 +58,7 @@ class Omlx < Formula
     # issues I've hit with the latest release on my M2 MacBook.
     # 0.29.0 has been solid; 0.30.x introduced a regression with lifespan
     # events that caused the server to hang on first request occasionally.
+    # Tested 0.30.6 again on 2025-01-10 — still seeing the hang, sticking with 0.29.0.
     system libexec/"bin/pip", "install", "uvicorn==0.29.0"
 
     bin.install_symlink Dir[libexec/"bin/omlx"]
@@ -67,6 +68,4 @@ class Omlx < Formula
   # The 0.1.32+ wheel ships libxgrammar_bindings.dylib with
   # @rpath/libtvm_ffi.dylib but no LC_RPATH pointing at where tvm_ffi
   # installs its native lib, and the dist-info is missing a RECORD
-  # entry for the dylib so tvm_ffi's manifest-based lookup fails.
-  # Both manifest as RuntimeError("Cannot find library: ...") at
-  # `import xgrammar`, which crashes /admin/api/grammar/pa
+  # entry for the dylib so tvm_ffi's man
